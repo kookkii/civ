@@ -567,3 +567,24 @@ function! omni#cpp#complete#Main(findstart, base)
 
     return s:popupItemResultList
 endfunc
+ heatmaps, scales, offsets = self._sess.run(None, {self._input_name: img})
+        faces_per_batch = []
+
+        for heatmap, offset, scale in zip(heatmaps, offsets, scales):
+            faces = []
+            for face in self.refine(heatmap, offset, scale, H, W, threshold):
+                l,t,r,b,c = face
+
+                if img_scale != 1.0:
+                    l,t,r,b = l/img_scale, t/img_scale, r/img_scale, b/img_scale
+
+                bt = b-t
+                if min(r-l,bt) < min_face_size:
+                   continue
+                b += bt*0.1
+
+                faces.append( (l,t,r,b) )
+
+            faces_per_batch.append(faces)
+
+        return faces_per_batch
